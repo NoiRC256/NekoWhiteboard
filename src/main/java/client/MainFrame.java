@@ -1,6 +1,7 @@
 package client;
 
 import client.users.User;
+import client.users.UserController;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -10,32 +11,46 @@ import java.awt.event.*;
 
 public class MainFrame extends JFrame {
 
-    User user;
-    Toolbox toolbox;
+    // Singleton.
+    private static MainFrame instance;
+    public static MainFrame getInstance(){
+        return instance;
+    }
 
-    private JPanel mainPanel;
-    private WhiteboardPanel whiteboardPanel;
-    private JLabel mouseCoordLabel;
-    private JPanel usersPanel;
-    private JPanel toolsPanel;
-    private JRadioButton freehandToolBtn;
-    private JRadioButton rectToolBtn;
-    private JScrollPane usersScrollPane;
-    private JPanel selfUserPanel;
-    private JButton clearButton;
-    private JRadioButton ovalToolBtn;
-    private JColorChooser colorChooser;
+    UserController userController;
+    ToolboxController toolboxController;
 
-    private MouseData mouseData;
+    public JPanel mainPanel;
+    public WhiteboardPanel whiteboardPanel;
+    public JLabel mouseCoordLabel;
+
+    // User view.
+    public JPanel selfUserPanel;
+    public JPanel usersPanel;
+    public JScrollPane usersScrollPane;
+
+    // Toolbox view.
+    public JPanel toolsPanel;
+    public JRadioButton freehandToolBtn;
+    public JRadioButton rectToolBtn;
+    public JRadioButton ovalToolBtn;
+    public JColorChooser colorChooser;
+    public JButton clearButton;
+
+    public MouseData mouseData;
 
     public MainFrame(String appName) {
         super(appName);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        MainFrame.instance = this;
         this.setContentPane(mainPanel);
 
         // Setup.
-        user = new User();
-        toolbox = user.toolbox;
+
+        userController = new UserController();
+        userController.init();
+        toolboxController = new ToolboxController();
+        toolboxController.init();
         mouseData = new MouseData();
 
         // Event listeners.
@@ -64,9 +79,9 @@ public class MainFrame extends JFrame {
                 // Clear tmp mouse data.
                 mouseData.mousePressPos = null;
                 mouseData.prevMouseDragPos = null;
-                // Clear active previews shape references.
-                toolbox.activeRectShape = null;
-                toolbox.activeOvalShape = null;
+                // Clear active adjustable shape refs.
+                toolboxController.toolbox.activeRectShape = null;
+                toolboxController.toolbox.activeOvalShape = null;
             }
         });
 
@@ -74,6 +89,8 @@ public class MainFrame extends JFrame {
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
+
+                // Update mouse data.
                 Point mousePos = e.getPoint();
                 mouseData.mousePos = mousePos;
                 if (mouseData.mousePressPos == null)
@@ -81,43 +98,15 @@ public class MainFrame extends JFrame {
                 if (mouseData.prevMouseDragPos == null)
                     mouseData.prevMouseDragPos = mousePos;
 
-                toolbox.draw(whiteboardPanel, mouseData);
-
+                // Draw on whiteboard.
+                toolboxController.draw(whiteboardPanel, mouseData);
                 whiteboardPanel.repaint();
+
                 mouseData.prevMouseDragPos = mousePos;
             }
         };
         whiteboardPanel.addMouseListener(mouseDragAdapter);
         whiteboardPanel.addMouseMotionListener(mouseDragAdapter);
-
-        // Tool Buttons.
-
-        freehandToolBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toolbox.toolType = ToolType.Freehand;
-            }
-        });
-
-        rectToolBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toolbox.toolType = ToolType.Rectangle;
-            }
-        });
-        ovalToolBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toolbox.toolType = ToolType.Oval;
-            }
-        });
-        clearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                whiteboardPanel.shapes.clear();
-                whiteboardPanel.repaint();
-            }
-        });
     }
 
     public static void main(String[] args) {
@@ -134,7 +123,7 @@ public class MainFrame extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 Color newColor = colorChooser.getColor();
-                toolbox.color = newColor;
+                toolboxController.toolbox.color = newColor;
             }
         });
     }
