@@ -1,4 +1,4 @@
-package client;
+package client.toolbox;
 
 public enum ToolType {
     Freehand,

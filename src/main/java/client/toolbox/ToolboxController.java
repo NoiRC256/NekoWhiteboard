@@ -1,12 +1,10 @@
-package client;
+package client.toolbox;
 
-import client.shapes.FreehandShape;
-import client.shapes.OvalShape;
-import client.shapes.RectangleShape;
-import com.sun.tools.javac.Main;
+import client.*;
+import client.shapes.*;
+import client.whiteboard.MouseData;
+import client.whiteboard.WhiteboardPanel;
 
-import javax.swing.*;
-import javax.tools.Tool;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,7 +43,7 @@ public class ToolboxController {
         view.clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                view.whiteboardPanel.shapes.clear();
+                view.whiteboardPanel.clearShapes();
                 view.whiteboardPanel.repaint();
             }
         });

@@ -1,8 +1,6 @@
-package client;
+package client.toolbox;
 
 import client.shapes.*;
-
-import java.awt.*;
 
 import java.awt.*;
 
@@ -10,9 +8,9 @@ public class Toolbox {
     /**
      * Current tool type.
      */
-    ToolType toolType = ToolType.Freehand;
-    Color color = Color.BLACK;
-    int thickness = 5;
+    public ToolType toolType = ToolType.Freehand;
+    public Color color = Color.BLACK;
+    public int thickness = 5;
 
     // Active shape previews.
     public AdjustableShapeBase activeRectShape;

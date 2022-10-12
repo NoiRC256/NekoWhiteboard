@@ -121,7 +121,7 @@
       </item>
     </group>
     <group name="Whiteboard">
-      <item class="client.WhiteboardPanel" icon="/com/intellij/uiDesigner/icons/panel.png" removable="true" auto-create-binding="true" can-attach-label="false" is-container="true">
+      <item class="client.whiteboard.WhiteboardPanel" icon="/com/intellij/uiDesigner/icons/panel.png" removable="true" auto-create-binding="true" can-attach-label="false" is-container="true">
         <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="0" />
       </item>
     </group>

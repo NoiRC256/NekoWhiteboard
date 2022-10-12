@@ -1,43 +1,48 @@
 package client;
 
-import client.users.User;
+import client.toolbox.ToolboxController;
 import client.users.UserController;
+import client.whiteboard.WhiteboardController;
+import client.whiteboard.WhiteboardPanel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
 
 public class MainFrame extends JFrame {
 
     // Singleton.
     private static MainFrame instance;
-    public static MainFrame getInstance(){
+    public static MainFrame getInstance() {
         return instance;
     }
 
-    UserController userController;
-    ToolboxController toolboxController;
+    // Controllers.
+    public WhiteboardController whiteboardController;
+    public UserController userController;
+    public ToolboxController toolboxController;
 
+    // Main view.
     public JPanel mainPanel;
+
+    // Whiteboard view.
     public WhiteboardPanel whiteboardPanel;
-    public JLabel mouseCoordLabel;
+    public JLabel mousePosLabel;
 
     // User view.
-    public JPanel selfUserPanel;
     public JPanel usersPanel;
-    public JScrollPane usersScrollPane;
+    public JPanel selfUserPanel;
+    public JScrollPane remoteUsersScrollPane;
 
     // Toolbox view.
-    public JPanel toolsPanel;
+    public JPanel toolboxPanel;
     public JRadioButton freehandToolBtn;
     public JRadioButton rectToolBtn;
     public JRadioButton ovalToolBtn;
     public JColorChooser colorChooser;
     public JButton clearButton;
 
-    public MouseData mouseData;
 
     public MainFrame(String appName) {
         super(appName);
@@ -45,68 +50,15 @@ public class MainFrame extends JFrame {
         MainFrame.instance = this;
         this.setContentPane(mainPanel);
 
-        // Setup.
-
+        // Setup controllers.
         userController = new UserController();
-        userController.init();
         toolboxController = new ToolboxController();
+        whiteboardController = new WhiteboardController(toolboxController, userController);
+
+        // Initialize controllers. Adds listeners, etc.
+        userController.init();
         toolboxController.init();
-        mouseData = new MouseData();
-
-        // Event listeners.
-
-        whiteboardPanel.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
-                Point mousePos = e.getPoint();
-                mouseCoordLabel.setText("x: " + mousePos.x + " y: " + mousePos.y);
-                mouseData.mousePos = mousePos;
-            }
-        });
-
-        whiteboardPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                Point mousePos = e.getPoint();
-                mouseData.mousePressPos = mousePos;
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e);
-                // Clear tmp mouse data.
-                mouseData.mousePressPos = null;
-                mouseData.prevMouseDragPos = null;
-                // Clear active adjustable shape refs.
-                toolboxController.toolbox.activeRectShape = null;
-                toolboxController.toolbox.activeOvalShape = null;
-            }
-        });
-
-        MouseAdapter mouseDragAdapter = new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                super.mouseDragged(e);
-
-                // Update mouse data.
-                Point mousePos = e.getPoint();
-                mouseData.mousePos = mousePos;
-                if (mouseData.mousePressPos == null)
-                    mouseData.mousePressPos = mousePos;
-                if (mouseData.prevMouseDragPos == null)
-                    mouseData.prevMouseDragPos = mousePos;
-
-                // Draw on whiteboard.
-                toolboxController.draw(whiteboardPanel, mouseData);
-                whiteboardPanel.repaint();
-
-                mouseData.prevMouseDragPos = mousePos;
-            }
-        };
-        whiteboardPanel.addMouseListener(mouseDragAdapter);
-        whiteboardPanel.addMouseMotionListener(mouseDragAdapter);
+        whiteboardController.init();
     }
 
     public static void main(String[] args) {
@@ -117,7 +69,8 @@ public class MainFrame extends JFrame {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         colorChooser = new JColorChooser();
-        mainPanel.add(colorChooser);
+        toolboxPanel.add(colorChooser);
+        colorChooser.setVisible(true);
 
         colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
             @Override

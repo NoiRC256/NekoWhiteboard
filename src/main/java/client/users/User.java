@@ -1,6 +1,6 @@
 package client.users;
 
-import client.*;
+import client.toolbox.ToolboxController;
 
 public class User {
 
