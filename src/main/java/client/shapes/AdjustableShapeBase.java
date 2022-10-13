@@ -1,8 +1,9 @@
 package client.shapes;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public abstract class AdjustableShapeBase implements IShape {
+public abstract class AdjustableShapeBase implements IShape, Serializable {
 
     public Color color;
     public Point position;

@@ -5,6 +5,9 @@ import client.shapes.*;
 import client.whiteboard.MouseData;
 import client.whiteboard.WhiteboardPanel;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,6 +41,14 @@ public class ToolboxController {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toolbox.toolType = ToolType.Oval;
+            }
+        });
+        view.thicknessSlider.setValue(toolbox.thickness);
+        view.thicknessSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int value = view.thicknessSlider.getValue();
+                toolbox.thickness = value;
             }
         });
         view.clearButton.addActionListener(new ActionListener() {

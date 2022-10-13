@@ -1,8 +1,12 @@
 package client.shapes;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class OvalShape extends AdjustableShapeBase implements IShape{
+/**
+ * Draws oval shape.
+ */
+public class OvalShape extends AdjustableShapeBase implements IShape, Serializable {
 
     public OvalShape(Point position, Color color, int thickness, int width, int height) {
         this.position = position;

@@ -1,8 +1,12 @@
 package client.shapes;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class FreehandShape implements IShape{
+/**
+ * Shape for freehand drawing.
+ */
+public class FreehandShape implements IShape, Serializable {
 
     public Color color;
     public Point point1;
@@ -20,9 +24,11 @@ public class FreehandShape implements IShape{
     public void draw(Graphics2D g) {
         g.setColor(color);
         Stroke stroke =  new BasicStroke(thickness,
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_ROUND);
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_MITER,
+                10);
         g.setStroke(stroke);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawLine(point1.x, point1.y, point2.x, point2.y);
     }
 }

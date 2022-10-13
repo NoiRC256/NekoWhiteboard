@@ -1,8 +1,12 @@
 package client.shapes;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class RectangleShape extends AdjustableShapeBase implements IShape{
+/**
+ * Draws rectangle shape.
+ */
+public class RectangleShape extends AdjustableShapeBase implements IShape, Serializable {
 
     public RectangleShape(Point position, Color color, int thickness, int width, int height){
         this.position = position;
