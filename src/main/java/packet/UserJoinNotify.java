@@ -1,4 +1,4 @@
-package server.packet;
+package packet;
 
 public class UserJoinNotify {
 

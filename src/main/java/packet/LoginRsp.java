@@ -1,6 +1,8 @@
-package server.packet;
+package packet;
 
-public class LoginRsp {
+import java.io.Serializable;
+
+public class LoginRsp implements Serializable {
 
     public String username;
     public int uid;

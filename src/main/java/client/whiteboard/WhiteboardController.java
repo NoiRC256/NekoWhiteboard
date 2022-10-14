@@ -25,6 +25,14 @@ public class WhiteboardController {
         this.userController = userController;
     }
 
+    public void enableCallbacks(){
+
+    }
+
+    public void disableCallbacks(){
+
+    }
+
     public void init(){
         view.whiteboardPanel.setShapes(whiteboardData.shapes);
 
@@ -65,7 +73,9 @@ public class WhiteboardController {
 
                 // Update mouse data.
                 Point mousePos = e.getPoint();
+                view.mousePosLabel.setText("x: " + mousePos.x + " y: " + mousePos.y);
                 mouseData.mousePos = mousePos;
+
                 if (mouseData.mousePressPos == null)
                     mouseData.mousePressPos = mousePos;
                 if (mouseData.prevMouseDragPos == null)

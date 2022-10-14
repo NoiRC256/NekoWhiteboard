@@ -5,7 +5,6 @@ import client.shapes.*;
 import client.whiteboard.MouseData;
 import client.whiteboard.WhiteboardPanel;
 
-import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
@@ -51,7 +50,7 @@ public class ToolboxController {
                 toolbox.thickness = value;
             }
         });
-        view.clearButton.addActionListener(new ActionListener() {
+        view.clearBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 view.whiteboardPanel.clearShapes();
