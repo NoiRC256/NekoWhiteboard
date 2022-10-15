@@ -9,10 +9,9 @@ public class Toolbox {
      * Current tool type.
      */
     public ToolType toolType = ToolType.Freehand;
-    public Color color = Color.BLACK;
+    public Color color = Color.ORANGE;
     public int thickness = 5;
 
     // Active shape previews.
-    public AdjustableShapeBase activeRectShape;
-    public AdjustableShapeBase activeOvalShape;
+    public AdjustableShapeBase previewShape;
 }

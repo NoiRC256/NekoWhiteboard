@@ -53,7 +53,8 @@ public class ToolboxController {
         view.clearBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                view.whiteboardPanel.clearShapes();
+                view.whiteboardPanel.clearBuffer();
+                view.whiteboardPanel.clearShapePreview();
                 view.whiteboardPanel.repaint();
             }
         });
@@ -66,28 +67,33 @@ public class ToolboxController {
 
         switch (toolbox.toolType) {
             case Freehand:
+                // Directly draw to whiteboard buffer.
                 FreehandShape freehandShape = new FreehandShape(prevMouseDragPos, mousePos,
                         toolbox.color, toolbox.thickness);
-                whiteboardPanel.addShape(freehandShape);
+                whiteboardPanel.drawToBuffer(freehandShape);
                 break;
             case Rectangle:
-                if(toolbox.activeRectShape == null){
+                // Adjust a shape preview, which will be drawn to whiteboard buffer after finalizing.
+                if(toolbox.previewShape == null){
                     RectangleShape rect = new RectangleShape(mousePos, toolbox.color,
                             toolbox.thickness, 1, 1);
-                    whiteboardPanel.addShape(rect);
-                    toolbox.activeRectShape = rect;
+                    toolbox.previewShape = rect;
+                    whiteboardPanel.setShapePreview(rect);
                 }
-                toolbox.activeRectShape.adjustAnchor(mousePos, mousePressPos);
+                toolbox.previewShape.adjustAnchor(mousePos, mousePressPos);
                 break;
             case Oval:
-                if(toolbox.activeRectShape == null){
+                // Adjust a shape preview, which will be drawn to whiteboard buffer after finalizing.
+                if(toolbox.previewShape == null){
                     OvalShape oval = new OvalShape(mousePos, toolbox.color,
                             toolbox.thickness, 1, 1);
-                    whiteboardPanel.addShape(oval);
-                    toolbox.activeRectShape = oval;
+                    toolbox.previewShape = oval;
+                    whiteboardPanel.setShapePreview(oval);
                 }
-                toolbox.activeRectShape.adjustAnchor(mousePos, mousePressPos);
+                toolbox.previewShape.adjustAnchor(mousePos, mousePressPos);
                 break;
         }
+
+        whiteboardPanel.repaint();
     }
 }

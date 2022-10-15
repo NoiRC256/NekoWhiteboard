@@ -34,7 +34,7 @@ public class WhiteboardController {
     }
 
     public void init(){
-        view.whiteboardPanel.setShapes(whiteboardData.shapes);
+        //view.whiteboardPanel.setShapes(whiteboardData.shapes);
 
         view.whiteboardPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -60,9 +60,9 @@ public class WhiteboardController {
                 // Clear tmp mouse data.
                 mouseData.mousePressPos = null;
                 mouseData.prevMouseDragPos = null;
-                // Clear active adjustable shape refs.
-                toolboxController.toolbox.activeRectShape = null;
-                toolboxController.toolbox.activeOvalShape = null;
+                // Apply and clear any shape preview.
+                view.whiteboardPanel.finalizeShapePreview();
+                toolboxController.toolbox.previewShape = null;
             }
         });
 
@@ -83,18 +83,12 @@ public class WhiteboardController {
 
                 // Draw on whiteboard.
                 view.toolboxController.draw(view.whiteboardPanel, mouseData);
-                view.whiteboardPanel.repaint();
-
+                //view.whiteboardPanel.repaint();
                 mouseData.prevMouseDragPos = mousePos;
             }
         };
         view.whiteboardPanel.addMouseListener(mouseDragAdapter);
         view.whiteboardPanel.addMouseMotionListener(mouseDragAdapter);
-    }
-
-    public void clear(){
-        view.whiteboardPanel.clearShapes();
-        view.whiteboardPanel.repaint();
     }
 
 }
