@@ -3,6 +3,7 @@ package client;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Main {
     private static Main instance;
@@ -22,7 +23,7 @@ public class Main {
     public JFrame launcherFrame;
     public JFrame mainFrame;
 
-    ClientThread client;
+    public ClientThread client;
 
     public static void main(String[] args) {
 
@@ -52,6 +53,9 @@ public class Main {
 
     public void start() {
 
+        this.launcherFrame.setVisible(false);
+        this.mainFrame.setVisible(true);
+
         switch (mode) {
             case Offline:
                 break;
@@ -63,18 +67,40 @@ public class Main {
                 client = new ClientThread(serverAddress, serverPort);
                 break;
         }
-        this.launcherFrame.setVisible(false);
-        this.mainFrame.setVisible(true);
+    }
+
+    public void quit() {
+
+        switch (mode) {
+            case Offline:
+                break;
+            case HostServer:
+                endServerProcess();
+                client.shutdown();
+                break;
+            case JoinServer:
+                client.shutdown();
+                break;
+        }
+
+        this.mainFrame.setVisible(false);
+        this.launcherFrame.setVisible(true);
     }
 
     private void startServerProcess(String[] args) {
         try {
             ProcessBuilder pb = new ProcessBuilder("java", "-jar", "server-jar-with-dependencies.jar");
             serverProcess = pb.start();
+            InputStream in = serverProcess.getInputStream();
+            InputStream err = serverProcess.getErrorStream();
             System.out.println("Run host server jar.");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void endServerProcess() {
+        serverProcess.destroy();
     }
 
     public void setProgramMode(ProgramMode mode) {

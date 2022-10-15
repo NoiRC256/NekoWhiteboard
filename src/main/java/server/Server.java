@@ -8,16 +8,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
 
     public static Boolean isActive = true;
     private static String host = "localhost";
     private static int port = 3001;
-    private static int uidCounter = 1;
+    public static AtomicInteger uidCounter = new AtomicInteger(0);
 
     private static ExecutorService threadPool;
-    private static ConcurrentHashMap<Integer, Socket> activeClients = new ConcurrentHashMap<Integer, Socket>();
+    public static ConcurrentHashMap<Integer, Socket> activeClients = new ConcurrentHashMap<Integer, Socket>();
 
     public static void main(String[] args) {
 
@@ -30,8 +31,7 @@ public class Server {
 
             while (isActive) {
                 Socket clientSocket = serverSocket.accept();
-                uidCounter += 1;
-                System.out.println("Client " + uidCounter + ": Connecting.");
+                System.out.println("Client Connecting...");
                 threadPool.execute(new ServerThread(clientSocket));
             }
         } catch (IOException e) {

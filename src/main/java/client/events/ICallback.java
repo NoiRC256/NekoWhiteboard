@@ -1,7 +1,7 @@
 package client.events;
 
-public interface ICallback {
+public interface ICallback<T extends EventArgs> {
 
-    void invoke();
+    void invoke(Object source, T args);
 
 }
