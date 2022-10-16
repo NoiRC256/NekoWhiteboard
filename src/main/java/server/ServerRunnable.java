@@ -8,10 +8,10 @@ import packet.UserLoginRsp;
 import java.io.*;
 import java.net.Socket;
 
-public class ServerThread implements Runnable {
+public class ServerRunnable implements Runnable {
     private final Socket socket;
 
-    public ServerThread(Socket socket) {
+    public ServerRunnable(Socket socket) {
         this.socket = socket;
     }
 
@@ -34,14 +34,14 @@ public class ServerThread implements Runnable {
     }
 
     private void handleMessage(Message msg, ObjectOutputStream out) throws IOException {
-        if (msg.getClass().equals(UserJoinReq.class)) {
-            UserLoginReq userLoginReq = (UserLoginReq) msg;
-            handleUserLoginReq(userLoginReq, out);
+        if (msg.getClass().equals(UserLoginReq.class)) {
+            handleUserLoginReq((UserLoginReq) msg, out);
         }
     }
 
     private void handleUserLoginReq(UserLoginReq req, ObjectOutputStream out) throws IOException {
         int uid = Server.uidCounter.getAndIncrement();
+        System.out.println("Server: Received user login request. Allocate UID: " + uid);
         UserLoginRsp userLoginRsp = new UserLoginRsp(uid);
         out.writeObject(userLoginRsp);
         out.flush();

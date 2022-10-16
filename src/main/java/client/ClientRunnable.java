@@ -2,16 +2,14 @@ package client;
 
 import client.events.EventHandler;
 import client.events.LoginEventArgs;
-import client.users.User;
 import packet.Message;
 import packet.UserLoginReq;
 import packet.UserLoginRsp;
 
-import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 
-public class ClientThread implements Runnable {
+public class ClientRunnable implements Runnable {
 
     Main main = Main.getInstance();
     private volatile boolean shutdown;
@@ -24,7 +22,7 @@ public class ClientThread implements Runnable {
     public final EventHandler otherUserJoinedEvt = new EventHandler();
     public final EventHandler addShapeEvt = new EventHandler();
 
-    public ClientThread(String serverAddress, int serverPort) {
+    public ClientRunnable(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
     }
@@ -35,6 +33,7 @@ public class ClientThread implements Runnable {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
+            System.out.println("Client: Logging in on server " + serverAddress + ":" + serverPort);
             UserLoginReq userLoginReq = new UserLoginReq();
             out.writeObject(userLoginReq);
             out.flush();
@@ -57,8 +56,9 @@ public class ClientThread implements Runnable {
         }
     }
 
-    private void handleUserLoginRsp(UserLoginRsp userLoginRsp, ObjectOutputStream out) throws IOException{
-        int uid = userLoginRsp.uid;
+    private void handleUserLoginRsp(UserLoginRsp rsp, ObjectOutputStream out) throws IOException{
+        int uid = rsp.uid;
+        System.out.println("Client: Logged in with UID: " + uid);
         loggedInEvt.invoke(this, new LoginEventArgs(uid));
     }
 

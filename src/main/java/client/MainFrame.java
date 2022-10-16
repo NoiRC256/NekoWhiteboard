@@ -92,11 +92,15 @@ public class MainFrame extends JFrame {
     //region Callbacks
 
     public void enableCallbacks() {
-        main.client.loggedInEvt.addCallback(this::onLoggedIn);
+        if (main.client != null) {
+            main.client.loggedInEvt.addCallback(this::onLoggedIn);
+        }
     }
 
     public void disableCallbacks() {
-        main.client.loggedInEvt.removeCallback(this::onLoggedIn);
+        if (main.client != null) {
+            main.client.loggedInEvt.removeCallback(this::onLoggedIn);
+        }
     }
 
     private void onLoggedIn(Object source, LoginEventArgs args) {

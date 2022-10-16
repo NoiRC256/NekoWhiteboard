@@ -20,10 +20,10 @@ public class Main {
     public String serverAddress;
     public int serverPort;
 
-    public JFrame launcherFrame;
-    public JFrame mainFrame;
+    public LauncherFrame launcherFrame;
+    public MainFrame mainFrame;
 
-    public ClientThread client;
+    public ClientRunnable client;
 
     public static void main(String[] args) {
 
@@ -60,22 +60,28 @@ public class Main {
             case Offline:
                 break;
             case HostServer:
-                startServerProcess(new String[]{serverAddress, Integer.toString(serverPort)});
-                client = new ClientThread(serverAddress, serverPort);
+                //startServerProcess(new String[]{serverAddress, Integer.toString(serverPort)});
+                client = new ClientRunnable(serverAddress, serverPort);
+                new Thread(client).start();
                 break;
             case JoinServer:
-                client = new ClientThread(serverAddress, serverPort);
+                client = new ClientRunnable(serverAddress, serverPort);
+                new Thread(client).start();
                 break;
         }
+
+        mainFrame.enableCallbacks();
     }
 
     public void quit() {
+
+        mainFrame.disableCallbacks();
 
         switch (mode) {
             case Offline:
                 break;
             case HostServer:
-                endServerProcess();
+                //endServerProcess();
                 client.shutdown();
                 break;
             case JoinServer:

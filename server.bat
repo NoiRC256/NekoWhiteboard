@@ -1,0 +1,1 @@
+java -jar target/server-jar-with-dependencies.jar localhost 3003
