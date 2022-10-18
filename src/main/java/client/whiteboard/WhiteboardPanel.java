@@ -1,14 +1,18 @@
 package client.whiteboard;
 
+import client.Main;
 import client.shapes.*;
+import client.users.UserRole;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WhiteboardPanel extends JComponent {
 
     public BufferedImage bufferedImage;
+    private ConcurrentLinkedQueue<IShape> pendingShapes = new ConcurrentLinkedQueue<IShape>();
     private IShape shapePreview;
 
     public WhiteboardPanel() {
@@ -24,10 +28,18 @@ public class WhiteboardPanel extends JComponent {
             initBuffer();
         }
 
-        // Draw main buffered image.
+        // Draw any pending shapes received from remote to buffered image.
+        synchronized (pendingShapes){
+            while(!pendingShapes.isEmpty()){
+                IShape shape = pendingShapes.poll();
+                drawToBuffer(shape);
+            }
+        }
+
+        // Draw buffered image to whiteboard.
         g2d.drawImage(bufferedImage, 0, 0, null);
 
-        // Update any temporary shape preview.
+        // Update any temporary shape preview. This is not drawn onto the buffered image.
         if (shapePreview != null) {
             shapePreview.draw(g2d);
         }
@@ -49,6 +61,7 @@ public class WhiteboardPanel extends JComponent {
     public void finalizeShapePreview(){
         if(hasActiveShapePreview()){
             drawToBuffer(shapePreview);
+            Main.getInstance().broadcastShape(shapePreview);
             clearShapePreview();
         }
     }
@@ -70,7 +83,8 @@ public class WhiteboardPanel extends JComponent {
         Graphics2D g2d = bufferedImage.createGraphics();
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, w, h);
-        g2d.dispose();bufferedImage = null;
+        g2d.dispose();
+        bufferedImage = null;
     }
 
     public Graphics2D createGraphics() {
@@ -91,5 +105,20 @@ public class WhiteboardPanel extends JComponent {
 
     public void setShapePreview(IShape shape) {
         this.shapePreview = shape;
+    }
+
+    public void addPendingShape(IShape shape){
+        this.pendingShapes.add(shape);
+    }
+
+    public void clearPendingShapes(){
+        this.pendingShapes.clear();
+    }
+
+    public void clearAll(){
+        clearBuffer();
+        clearShapePreview();
+        clearPendingShapes();
+        repaint();
     }
 }

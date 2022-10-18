@@ -2,8 +2,11 @@ package client.toolbox;
 
 import client.*;
 import client.shapes.*;
+import client.users.UserRole;
 import client.whiteboard.MouseData;
 import client.whiteboard.WhiteboardPanel;
+import packet.BroadcastReq;
+import packet.WhiteboardShapeNotify;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -13,14 +16,15 @@ import java.awt.event.ActionListener;
 
 public class ToolboxController {
 
+    public Main main = Main.getInstance();
     public MainFrame view = MainFrame.getInstance();
     public Toolbox toolbox;
 
-    public ToolboxController(){
+    public ToolboxController() {
         toolbox = new Toolbox();
     }
 
-    public void init(){
+    public void init() {
 
         // Toolbox button listeners.
 
@@ -53,14 +57,17 @@ public class ToolboxController {
         view.clearBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                view.whiteboardPanel.clearBuffer();
-                view.whiteboardPanel.clearShapePreview();
-                view.whiteboardPanel.repaint();
+                if (Main.getInstance().userRole == UserRole.Guest) {
+                    System.out.println("Guests cannot clear whiteboard.");
+                } else {
+                    view.whiteboardPanel.clearAll();
+                    main.broadcastClearWhiteboard();
+                }
             }
         });
     }
 
-    public void draw(WhiteboardPanel whiteboardPanel, MouseData mouseData){
+    public void draw(WhiteboardPanel whiteboardPanel, MouseData mouseData) {
         Point mousePos = mouseData.mousePos;
         Point mousePressPos = mouseData.mousePressPos;
         Point prevMouseDragPos = mouseData.prevMouseDragPos;
@@ -71,10 +78,11 @@ public class ToolboxController {
                 FreehandShape freehandShape = new FreehandShape(prevMouseDragPos, mousePos,
                         toolbox.color, toolbox.thickness);
                 whiteboardPanel.drawToBuffer(freehandShape);
+                main.broadcastShape(freehandShape);
                 break;
             case Rectangle:
                 // Adjust a shape preview, which will be drawn to whiteboard buffer after finalizing.
-                if(toolbox.previewShape == null){
+                if (toolbox.previewShape == null) {
                     RectangleShape rect = new RectangleShape(mousePos, toolbox.color,
                             toolbox.thickness, 1, 1);
                     toolbox.previewShape = rect;
@@ -84,7 +92,7 @@ public class ToolboxController {
                 break;
             case Oval:
                 // Adjust a shape preview, which will be drawn to whiteboard buffer after finalizing.
-                if(toolbox.previewShape == null){
+                if (toolbox.previewShape == null) {
                     OvalShape oval = new OvalShape(mousePos, toolbox.color,
                             toolbox.thickness, 1, 1);
                     toolbox.previewShape = oval;

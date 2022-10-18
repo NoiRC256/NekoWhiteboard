@@ -1,5 +1,7 @@
 package client;
 
+import client.users.UserData;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -42,16 +44,17 @@ public class LauncherController {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Main main = Main.getInstance();
+                main.username = view.usernameField.getText();
                 switch (main.mode) {
                     case Offline:
-                        Main.getInstance().start();
+                        Main.getInstance().start(view.usernameField.getText());
                         break;
                     case HostServer:
                     case JoinServer:
                         main.serverAddress = view.serverAddressField.getText();
                         try {
                             main.serverPort = Integer.parseInt(view.serverPortField.getText());
-                            Main.getInstance().start();
+                            Main.getInstance().start(view.usernameField.getText());
                         } catch (NumberFormatException ex) {
                             System.out.println("Invalid port number format");
                         }

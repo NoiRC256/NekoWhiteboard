@@ -1,5 +1,10 @@
 package client;
 
+import client.shapes.IShape;
+import client.users.UserData;
+import client.users.UserRole;
+import packet.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -15,6 +20,10 @@ public class Main {
         return instance;
     }
 
+    public static final String DEFAULT_USERNAME = "username";
+    public UserData userData;
+    public UserRole userRole = UserRole.None;
+
     public Process serverProcess;
     public ProgramMode mode = ProgramMode.Offline;
     public String serverAddress;
@@ -23,6 +32,7 @@ public class Main {
     public LauncherFrame launcherFrame;
     public MainFrame mainFrame;
 
+    public String username = DEFAULT_USERNAME;
     public ClientRunnable client;
 
     public static void main(String[] args) {
@@ -39,32 +49,33 @@ public class Main {
 
                 // Create frames.
                 main.launcherFrame = new LauncherFrame("Neko Whiteboard Launcher");
-                main.mainFrame = new MainFrame("Neko Whiteboard");
                 main.launcherFrame.setSize(LauncherFrame.DEFAULT_WIDTH, LauncherFrame.DEFAULT_HEIGHT);
                 main.launcherFrame.setMinimumSize(new Dimension(LauncherFrame.MIN_WIDTH, LauncherFrame.MIN_HEIGHT));
-                main.mainFrame.setSize(MainFrame.DEFAULT_WIDTH, MainFrame.DEFAULT_HEIGHT);
-                main.mainFrame.setMinimumSize(new Dimension(MainFrame.MIN_WIDTH, MainFrame.MIN_HEIGHT));
-
                 main.launcherFrame.setVisible(true);
-                main.mainFrame.setVisible(false);
             }
         });
     }
 
-    public void start() {
+    public void start(String username) {
 
         this.launcherFrame.setVisible(false);
+
+        createMainFrame();
         this.mainFrame.setVisible(true);
 
         switch (mode) {
             case Offline:
+                userData = new UserData(-1, username);
+                userRole = UserRole.None;
                 break;
             case HostServer:
                 //startServerProcess(new String[]{serverAddress, Integer.toString(serverPort)});
+                userRole = UserRole.Manager;
                 client = new ClientRunnable(serverAddress, serverPort);
                 new Thread(client).start();
                 break;
             case JoinServer:
+                userRole = UserRole.Guest;
                 client = new ClientRunnable(serverAddress, serverPort);
                 new Thread(client).start();
                 break;
@@ -74,6 +85,8 @@ public class Main {
     }
 
     public void quit() {
+
+        broadcastQuit();
 
         mainFrame.disableCallbacks();
 
@@ -89,8 +102,18 @@ public class Main {
                 break;
         }
 
+        userData = null;
+        userRole = UserRole.None;
+
         this.mainFrame.setVisible(false);
         this.launcherFrame.setVisible(true);
+    }
+
+    private void createMainFrame() {
+        mainFrame = new MainFrame("Neko Whiteboard");
+        mainFrame.setSize(MainFrame.DEFAULT_WIDTH, MainFrame.DEFAULT_HEIGHT);
+        mainFrame.setMinimumSize(new Dimension(MainFrame.MIN_WIDTH, MainFrame.MIN_HEIGHT));
+        mainFrame.setVisible(false);
     }
 
     private void startServerProcess(String[] args) {
@@ -112,4 +135,44 @@ public class Main {
     public void setProgramMode(ProgramMode mode) {
         this.mode = mode;
     }
+
+    //region Request to broadcast message
+
+    public void broadcastMessage(Message message){
+        broadcastMessage(message, true);
+    }
+
+    public void broadcastMessage(Message message, boolean ignoreSource){
+        BroadcastReq msg = new BroadcastReq(message, true);
+        client.broadcastMessage(msg);
+    }
+
+    public void broadcastShape(IShape shape) {
+        if (client == null) return;
+        // Put a new shape notify message into a broadcast request, let the client ask server to broadcast it.
+        WhiteboardShapeNotify message = new WhiteboardShapeNotify(shape);
+        BroadcastReq msg = new BroadcastReq(message, true);
+        client.broadcastMessage(msg);
+    }
+
+    public void broadcastClearWhiteboard() {
+        if (client == null) return;
+        if (userRole == UserRole.Guest) {
+            System.out.println("Guests cannot request to broadcast clear whiteboard message.");
+            return;
+        }
+
+        WhiteboardClearNotify message = new WhiteboardClearNotify();
+        BroadcastReq msg = new BroadcastReq(message, true);
+        client.broadcastMessage(msg);
+    }
+
+    public void broadcastQuit() {
+        if (client == null) return;
+        if (userData == null) return;
+        UserLeaveNotify message = new UserLeaveNotify(userData.uid);
+        broadcastMessage(message);
+    }
+
+    //endregion
 }

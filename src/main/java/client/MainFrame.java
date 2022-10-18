@@ -1,6 +1,6 @@
 package client;
 
-import client.events.LoginEventArgs;
+import client.events.*;
 import client.toolbox.ToolboxController;
 import client.users.UserController;
 import client.whiteboard.WhiteboardController;
@@ -8,12 +8,14 @@ import client.whiteboard.WhiteboardPanel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class MainFrame extends JFrame {
 
@@ -48,14 +50,16 @@ public class MainFrame extends JFrame {
     public JRadioButton freehandToolBtn;
     public JRadioButton rectToolBtn;
     public JRadioButton ovalToolBtn;
+    public JSlider thicknessSlider;
     public JButton clearBtn;
 
     // Users view.
-    public JPanel usersPanel;
+    public JPanel rightPanel;
     public JPanel selfUserPanel;
-    public JPanel remoteUsersPanel;
     public JLabel usernameLabel;
-    public JSlider thicknessSlider;
+    public JScrollPane usersScrollPane;
+    public JPanel usersPanel;
+    public ArrayList<JButton> userBtns = new ArrayList<JButton>();
 
     // Other.
     private JPanel bottomPanel;
@@ -94,18 +98,43 @@ public class MainFrame extends JFrame {
     public void enableCallbacks() {
         if (main.client != null) {
             main.client.loggedInEvt.addCallback(this::onLoggedIn);
+            main.client.joinedSessionEvt.addCallback(this::onJoinedSession);
+            main.client.guestJoinedEvt.addCallback(this::onGuestJoined);
+            main.client.addShapeEvt.addCallback(this::onAddShape);
+            main.client.clearWhiteboardEvt.addCallback(this::onClearWhiteboard);
         }
     }
 
     public void disableCallbacks() {
         if (main.client != null) {
             main.client.loggedInEvt.removeCallback(this::onLoggedIn);
+            main.client.joinedSessionEvt.removeCallback(this::onJoinedSession);
+            main.client.guestJoinedEvt.removeCallback(this::onGuestJoined);
+            main.client.addShapeEvt.removeCallback(this::onAddShape);
+            main.client.clearWhiteboardEvt.removeCallback(this::onClearWhiteboard);
         }
     }
 
     private void onLoggedIn(Object source, LoginEventArgs args) {
-        uidLabel.setText(Integer.toString(256));
+        uidLabel.setText(Integer.toString(args.userData.uid));
     }
+
+    private void onJoinedSession(Object source, EventArgs args) {
+    }
+
+    private void onGuestJoined(Object source, UserEventArgs args) {
+        userController.addUser(args.userData);
+    }
+
+    private void onAddShape(Object source, ShapeEventArgs args) {
+        whiteboardPanel.addPendingShape(args.shape);
+        whiteboardPanel.repaint();
+    }
+
+    private void onClearWhiteboard(Object source, EventArgs args) {
+        whiteboardPanel.clearAll();
+    }
+
 
     //endregion
 
@@ -133,7 +162,6 @@ public class MainFrame extends JFrame {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.ipadx = 10;
         mainPanel.add(toolboxPanel, gbc);
@@ -201,39 +229,23 @@ public class MainFrame extends JFrame {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         mainPanel.add(whiteboardPanel, gbc);
-        usersPanel = new JPanel();
-        usersPanel.setLayout(new GridBagLayout());
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        rightPanel.setMaximumSize(new Dimension(2147483647, 2147483647));
+        rightPanel.setPreferredSize(new Dimension(128, 28));
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = 0;
-        gbc.weightx = 0.05;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        mainPanel.add(usersPanel, gbc);
-        usersPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
-        selfUserPanel = new JPanel();
-        selfUserPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.1;
-        gbc.fill = GridBagConstraints.BOTH;
-        usersPanel.add(selfUserPanel, gbc);
-        usernameLabel = new JLabel();
-        usernameLabel.setText("username");
-        selfUserPanel.add(usernameLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        remoteUsersPanel = new JPanel();
-        remoteUsersPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        usersPanel.add(remoteUsersPanel, gbc);
-        final Spacer spacer2 = new Spacer();
-        remoteUsersPanel.add(spacer2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        gbc.ipadx = 10;
+        mainPanel.add(rightPanel, gbc);
+        rightPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        usersScrollPane = new JScrollPane();
+        rightPanel.add(usersScrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        usersPanel = new JPanel();
+        usersPanel.setLayout(new FormLayout("", ""));
+        usersScrollPane.setViewportView(usersPanel);
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
@@ -276,8 +288,12 @@ public class MainFrame extends JFrame {
         quitBtn = new JButton();
         quitBtn.setText("Quit");
         panel3.add(quitBtn, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        panel3.add(spacer3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        selfUserPanel = new JPanel();
+        selfUserPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.add(selfUserPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        usernameLabel = new JLabel();
+        usernameLabel.setText("username");
+        selfUserPanel.add(usernameLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         infoPanel = new JPanel();
         infoPanel.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
