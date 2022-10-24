@@ -12,14 +12,12 @@ import java.awt.event.MouseMotionAdapter;
 public class WhiteboardController {
 
     MainFrame view = MainFrame.getInstance();
-    WhiteboardData whiteboardData;
     MouseData mouseData;
 
     ToolboxController toolboxController;
     UserController userController;
 
     public WhiteboardController(ToolboxController toolboxController, UserController userController){
-        whiteboardData = new WhiteboardData();
         mouseData = new MouseData();
         this.toolboxController = toolboxController;
         this.userController = userController;
