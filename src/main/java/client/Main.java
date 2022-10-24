@@ -26,8 +26,8 @@ public class Main {
 
     public Process serverProcess;
     public ProgramMode mode = ProgramMode.Offline;
-    public String serverAddress;
-    public int serverPort;
+    public static String serverAddress;
+    public static int serverPort;
 
     public LauncherFrame launcherFrame;
     public MainFrame mainFrame;
@@ -36,6 +36,8 @@ public class Main {
     public ClientRunnable client;
 
     public static void main(String[] args) {
+
+        parseArgs(args);
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -54,6 +56,25 @@ public class Main {
                 main.launcherFrame.setVisible(true);
             }
         });
+    }
+
+    private static void parseArgs(String[] args) {
+
+        if (args.length <= 0) return;
+
+        // Port number arg.
+        if (args[0] != null) {
+            serverAddress = args[0];
+        }
+
+        // Port number arg.
+        if (args[1] != null) {
+            try {
+                serverPort = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid port number format.");
+            }
+        }
     }
 
     public void start(String username) {
@@ -131,17 +152,17 @@ public class Main {
 
     //region Request to broadcast message
 
-    public void broadcastMessage(Message message){
+    public void broadcastMessage(Message message) {
         broadcastMessage(message, true);
     }
 
-    public void broadcastMessage(Message message, boolean ignoreSource){
+    public void broadcastMessage(Message message, boolean ignoreSource) {
         BroadcastReq msg = new BroadcastReq(message, true);
         client.broadcastMessage(msg);
     }
 
-    public void reqRemoveUser(UserData userData){
-        if(userRole != UserRole.Manager) return;
+    public void reqRemoveUser(UserData userData) {
+        if (userRole != UserRole.Manager) return;
         client.sendMessage(new UserRemoveReq(this.userData, userData));
     }
 
@@ -149,6 +170,13 @@ public class Main {
         if (client == null) return;
         // Put a new shape notify message into a broadcast request, let the client ask server to broadcast it.
         WhiteboardShapeNotify message = new WhiteboardShapeNotify(shape);
+        BroadcastReq msg = new BroadcastReq(message, true);
+        client.broadcastMessage(msg);
+    }
+
+    public void broadcastChatEntry(UserData sender, String content) {
+        if (client == null) return;
+        ChatEntryNotify message = new ChatEntryNotify(sender, content);
         BroadcastReq msg = new BroadcastReq(message, true);
         client.broadcastMessage(msg);
     }

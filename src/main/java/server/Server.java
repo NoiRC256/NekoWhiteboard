@@ -69,7 +69,7 @@ public class Server {
         // Port number arg.
         if (args[0] != null) {
             try {
-                port = Integer.parseInt(args[1]);
+                port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 System.out.println("Invalid port number format.");
             }

@@ -11,6 +11,7 @@ import server.WhiteboardData;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.CharsetEncoder;
 
 public class ClientRunnable implements Runnable {
 
@@ -47,6 +48,7 @@ public class ClientRunnable implements Runnable {
     public final EventHandler clearWhiteboardEvt = new EventHandler();
     public final EventHandler<WhiteboardDataEventArgs> newWhiteboardDataEvt = new EventHandler();
     public final EventHandler disconnectedEvt = new EventHandler();
+    public final EventHandler<ChatEntryEventArgs> newChatEntryEvt = new EventHandler<ChatEntryEventArgs>();
 
     public ClientRunnable(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
@@ -129,6 +131,14 @@ public class ClientRunnable implements Runnable {
         else if (msg.getClass().equals(WhiteboardDataNotify.class)){
             handleWhiteboardDataNotify((WhiteboardDataNotify) msg);
         }
+        // Chat entry notify.
+        else if (msg.getClass().equals(ChatEntryNotify.class)){
+            handleChatEntryNotify((ChatEntryNotify) msg, out);
+        }
+    }
+
+    private void handleChatEntryNotify(ChatEntryNotify msg, ObjectOutputStream out) {
+        newChatEntryEvt.invoke(this, new ChatEntryEventArgs(msg.sender, msg.content));
     }
 
     private void handleUserListNotify(UserListNotify msg, ObjectOutputStream out) {

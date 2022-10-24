@@ -18,7 +18,6 @@ public class UserController {
 
     public void init(){
         view.usersPanel.setLayout(new BoxLayout(view.usersPanel, BoxLayout.Y_AXIS));
-
     }
 
     public void addUser(UserData userData){

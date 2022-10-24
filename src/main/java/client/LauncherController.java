@@ -19,6 +19,7 @@ public class LauncherController {
         Main main = Main.getInstance();
         main.setProgramMode(ProgramMode.Offline);
         view.serverInfoPanel.setVisible(false);
+        view.serverPortField.setText(Integer.toString(Main.serverPort));
 
         view.modeBox.addActionListener(new ActionListener() {
             @Override

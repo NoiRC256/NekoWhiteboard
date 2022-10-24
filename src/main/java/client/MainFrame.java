@@ -9,6 +9,7 @@ import client.whiteboard.WhiteboardPanel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
@@ -39,6 +40,7 @@ public class MainFrame extends JFrame {
     public WhiteboardController whiteboardController;
     public UserController userController;
     public ToolboxController toolboxController;
+    public ChatController chatController;
 
     // Main view.
     public JPanel mainPanel;
@@ -64,6 +66,13 @@ public class MainFrame extends JFrame {
     public JPanel usersPanel;
     public HashMap<Integer, JButton> userBtns = new HashMap<Integer, JButton>();
 
+    // Chat view.
+    public JScrollPane chatScrollPane;
+    public JPanel chatContentPanel;
+    public JTextPane charTextPane;
+    public JButton sendChatBtn;
+    public ArrayList<JLabel> chatEntryLabels = new ArrayList<JLabel>();
+
     // Other.
     private JPanel bottomPanel;
     private JPanel chatPanel;
@@ -82,11 +91,13 @@ public class MainFrame extends JFrame {
         userController = new UserController();
         toolboxController = new ToolboxController();
         whiteboardController = new WhiteboardController(toolboxController, userController);
+        chatController = new ChatController();
 
         // Initialize controllers. Adds listeners, etc.
         userController.init();
         toolboxController.init();
         whiteboardController.init();
+        chatController.init();
 
         quitBtn.addActionListener(new ActionListener() {
             @Override
@@ -105,6 +116,7 @@ public class MainFrame extends JFrame {
             main.client.userJoinedEvt.addCallback(this::onUserJoined);
             main.client.userLeavedEvt.addCallback(this::onUserLeaved);
             main.client.addShapeEvt.addCallback(this::onAddShape);
+            main.client.newChatEntryEvt.addCallback(this::onNewChatEntry);
             main.client.clearWhiteboardEvt.addCallback(this::onClearWhiteboard);
             main.client.newWhiteboardDataEvt.addCallback(this::onNewWhiteboardData);
             main.client.disconnectedEvt.addCallback(this::onDisconnected);
@@ -118,6 +130,7 @@ public class MainFrame extends JFrame {
             main.client.userJoinedEvt.removeCallback(this::onUserJoined);
             main.client.userLeavedEvt.removeCallback(this::onUserLeaved);
             main.client.addShapeEvt.removeCallback(this::onAddShape);
+            main.client.newChatEntryEvt.removeCallback(this::onNewChatEntry);
             main.client.clearWhiteboardEvt.removeCallback(this::onClearWhiteboard);
             main.client.newWhiteboardDataEvt.removeCallback(this::onNewWhiteboardData);
             main.client.disconnectedEvt.removeCallback(this::onDisconnected);
@@ -157,6 +170,10 @@ public class MainFrame extends JFrame {
     private void onAddShape(Object source, ShapeEventArgs args) {
         whiteboardPanel.addPendingShape(args.shape);
         whiteboardPanel.repaint();
+    }
+
+    private void onNewChatEntry(Object o, ChatEntryEventArgs chatEntryEventArgs) {
+        chatController.addChatEntry(chatEntryEventArgs.sender, chatEntryEventArgs.content);
     }
 
     private void onClearWhiteboard(Object source, EventArgs args) {
@@ -297,7 +314,7 @@ public class MainFrame extends JFrame {
         mainPanel.add(bottomPanel, gbc);
         bottomPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         chatPanel = new JPanel();
-        chatPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        chatPanel.setLayout(new GridBagLayout());
         chatPanel.setPreferredSize(new Dimension(300, 50));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
@@ -307,6 +324,33 @@ public class MainFrame extends JFrame {
         gbc.fill = GridBagConstraints.BOTH;
         bottomPanel.add(chatPanel, gbc);
         chatPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        chatScrollPane = new JScrollPane();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        chatPanel.add(chatScrollPane, gbc);
+        chatContentPanel = new JPanel();
+        chatContentPanel.setLayout(new FormLayout("fill:d:grow", "center:d:grow"));
+        chatContentPanel.setPreferredSize(new Dimension(300, 0));
+        chatScrollPane.setViewportView(chatContentPanel);
+        charTextPane = new JTextPane();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        chatPanel.add(charTextPane, gbc);
+        sendChatBtn = new JButton();
+        sendChatBtn.setText("Send");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        chatPanel.add(sendChatBtn, gbc);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         gbc = new GridBagConstraints();
