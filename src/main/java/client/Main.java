@@ -69,14 +69,9 @@ public class Main {
                 userData = new UserData(-1, username);
                 userRole = UserRole.None;
                 break;
-            case HostServer:
+            case Online:
                 //startServerProcess(new String[]{serverAddress, Integer.toString(serverPort)});
                 userRole = UserRole.Manager;
-                client = new ClientRunnable(serverAddress, serverPort);
-                new Thread(client).start();
-                break;
-            case JoinServer:
-                userRole = UserRole.Guest;
                 client = new ClientRunnable(serverAddress, serverPort);
                 new Thread(client).start();
                 break;
@@ -94,11 +89,8 @@ public class Main {
         switch (mode) {
             case Offline:
                 break;
-            case HostServer:
+            case Online:
                 //endServerProcess();
-                client.shutdown();
-                break;
-            case JoinServer:
                 client.shutdown();
                 break;
         }
@@ -148,6 +140,11 @@ public class Main {
         client.broadcastMessage(msg);
     }
 
+    public void reqRemoveUser(UserData userData){
+        if(userRole != UserRole.Manager) return;
+        client.sendMessage(new UserRemoveReq(this.userData, userData));
+    }
+
     public void broadcastShape(IShape shape) {
         if (client == null) return;
         // Put a new shape notify message into a broadcast request, let the client ask server to broadcast it.
@@ -171,7 +168,7 @@ public class Main {
     public void broadcastQuit() {
         if (client == null) return;
         if (userData == null) return;
-        UserLeaveNotify message = new UserLeaveNotify(userData.uid);
+        UserLeaveNotify message = new UserLeaveNotify(userData);
         broadcastMessage(message);
     }
 

@@ -29,11 +29,7 @@ public class LauncherController {
                         view.serverInfoPanel.setVisible(false);
                         break;
                     case 1:
-                        main.setProgramMode(ProgramMode.HostServer);
-                        view.serverInfoPanel.setVisible(true);
-                        break;
-                    case 2:
-                        main.setProgramMode(ProgramMode.JoinServer);
+                        main.setProgramMode(ProgramMode.Online);
                         view.serverInfoPanel.setVisible(true);
                         break;
                 }
@@ -49,8 +45,7 @@ public class LauncherController {
                     case Offline:
                         Main.getInstance().start(view.usernameField.getText());
                         break;
-                    case HostServer:
-                    case JoinServer:
+                    case Online:
                         main.serverAddress = view.serverAddressField.getText();
                         try {
                             main.serverPort = Integer.parseInt(view.serverPortField.getText());

@@ -8,7 +8,6 @@ import packet.Message;
 import packet.*;
 import server.WhiteboardData;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
@@ -36,7 +35,8 @@ public class ClientRunnable implements Runnable {
     /**
      * Other user has joined session.
      */
-    public final EventHandler<UserEventArgs> guestJoinedEvt = new EventHandler();
+    public final EventHandler<UserEventArgs> userJoinedEvt = new EventHandler();
+    public final EventHandler<UserEventArgs> userLeavedEvt = new EventHandler();
     /**
      * Should add shape to whiteboard.
      */
@@ -46,6 +46,7 @@ public class ClientRunnable implements Runnable {
      */
     public final EventHandler clearWhiteboardEvt = new EventHandler();
     public final EventHandler<WhiteboardDataEventArgs> newWhiteboardDataEvt = new EventHandler();
+    public final EventHandler disconnectedEvt = new EventHandler();
 
     public ClientRunnable(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
@@ -83,7 +84,8 @@ public class ClientRunnable implements Runnable {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Client: Disconnected from server.");
+            disconnectedEvt.invoke(this, EventArgs.empty);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -97,15 +99,23 @@ public class ClientRunnable implements Runnable {
 
         // Self login response.
         if (msg.getClass().equals(UserLoginRsp.class)) {
-            handleUserLoginRsp((UserLoginRsp) msg, out);
+            handleSelfLoginRsp((UserLoginRsp) msg, out);
         }
         // Self join response.
         else if (msg.getClass().equals(UserJoinRsp.class)) {
-            handleUserJoinRsp((UserJoinRsp) msg, out);
+            handleSelfJoinRsp((UserJoinRsp) msg, out);
         }
-        // Guest join notify.
+        // User join notify.
         else if (msg.getClass().equals(UserJoinNotify.class)){
             handleUserJoinNotify((UserJoinNotify) msg, out);
+        }
+        // User leave notify.
+        else if (msg.getClass().equals(UserLeaveNotify.class)){
+            handleUserLeaveNotify((UserLeaveNotify) msg, out);
+        }
+        // User list notify.
+        else if (msg.getClass().equals(UserListNotify.class)){
+            handleUserListNotify((UserListNotify) msg, out);
         }
         // Whiteboard add shape notify.
         else if (msg.getClass().equals(WhiteboardShapeNotify.class)){
@@ -121,15 +131,25 @@ public class ClientRunnable implements Runnable {
         }
     }
 
+    private void handleUserListNotify(UserListNotify msg, ObjectOutputStream out) {
+        for(UserData userData : msg.userDatas){
+            userJoinedEvt.invoke(this, new UserEventArgs(userData));
+        }
+    }
+
+    private void handleUserLeaveNotify(UserLeaveNotify msg, ObjectOutputStream out) {
+        System.out.println("Client: User UID " + msg.userData.uid + " disconnected");
+        userLeavedEvt.invoke(this, new UserEventArgs(msg.userData));
+    }
+
     //region User
 
     // Login response.
-    private void handleUserLoginRsp(UserLoginRsp rsp, ObjectOutputStream out) throws IOException {
-        int uid = rsp.uid;
-        UserData userData = new UserData(uid, main.username);
+    private void handleSelfLoginRsp(UserLoginRsp rsp, ObjectOutputStream out) throws IOException {
+        UserData userData = new UserData(rsp.uid, main.username);
 
         // Logged in.
-        System.out.println("Client: Logged in with UID: " + uid);
+        System.out.println("Client: Logged in with UID: " + rsp.uid);
         Main.getInstance().userData = userData;
         loggedInEvt.invoke(this, new LoginEventArgs(userData));
 
@@ -140,10 +160,11 @@ public class ClientRunnable implements Runnable {
     }
 
     // Join session response.
-    private void handleUserJoinRsp(UserJoinRsp rsp, ObjectOutputStream out) throws IOException {
+    private void handleSelfJoinRsp(UserJoinRsp rsp, ObjectOutputStream out) throws IOException {
         if(rsp.isApproved){
-            System.out.println("Client: Joined session as " + rsp.userRole);
+            Main.getInstance().userData.role = rsp.userRole;
             Main.getInstance().userRole = rsp.userRole;
+            System.out.println("Client: Joined session as " + rsp.userRole);
             joinedSessionEvt.invoke(this, EventArgs.empty);
         }
 
@@ -161,7 +182,7 @@ public class ClientRunnable implements Runnable {
     // Other user joined session.
     private void handleUserJoinNotify(UserJoinNotify msg, ObjectOutputStream out) throws IOException{
         System.out.println("Client: User " + msg.userData.username + " joined session.");
-        guestJoinedEvt.invoke(this, new UserEventArgs(msg.userData));
+        userJoinedEvt.invoke(this, new UserEventArgs(msg.userData));
     }
 
     //endregion
@@ -193,7 +214,23 @@ public class ClientRunnable implements Runnable {
     //region Send
 
     /**
-     * Request the server to broadcast a message
+     * Send a message to server.
+     * @param msg
+     */
+    public void sendMessage(Message msg){
+        if(globalOut == null) return;
+        try{
+            globalOut.writeObject(msg);
+            globalOut.flush();
+            System.out.println("Client: send message " + msg);
+        }catch (IOException e){
+            System.out.println("Client: cannot send message.");
+            //throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Request the server to broadcast a message.
      */
     public void broadcastMessage(BroadcastReq req){
         if(globalOut == null) return;

@@ -9,7 +9,7 @@ public class UserListNotify extends Message implements Serializable {
     public final UserData[] userDatas;
 
     public UserListNotify(UserData[] userDatas) {
-        this.userDatas =userDatas;
+        this.userDatas = userDatas;
     }
 
 }

@@ -3,6 +3,7 @@ package client;
 import client.events.*;
 import client.toolbox.ToolboxController;
 import client.users.UserController;
+import client.users.UserRole;
 import client.whiteboard.WhiteboardController;
 import client.whiteboard.WhiteboardPanel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -16,6 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainFrame extends JFrame {
 
@@ -60,7 +62,7 @@ public class MainFrame extends JFrame {
     public JLabel usernameLabel;
     public JScrollPane usersScrollPane;
     public JPanel usersPanel;
-    public ArrayList<JButton> userBtns = new ArrayList<JButton>();
+    public HashMap<Integer, JButton> userBtns = new HashMap<Integer, JButton>();
 
     // Other.
     private JPanel bottomPanel;
@@ -100,10 +102,12 @@ public class MainFrame extends JFrame {
         if (main.client != null) {
             main.client.loggedInEvt.addCallback(this::onLoggedIn);
             main.client.joinedSessionEvt.addCallback(this::onJoinedSession);
-            main.client.guestJoinedEvt.addCallback(this::onGuestJoined);
+            main.client.userJoinedEvt.addCallback(this::onUserJoined);
+            main.client.userLeavedEvt.addCallback(this::onUserLeaved);
             main.client.addShapeEvt.addCallback(this::onAddShape);
             main.client.clearWhiteboardEvt.addCallback(this::onClearWhiteboard);
             main.client.newWhiteboardDataEvt.addCallback(this::onNewWhiteboardData);
+            main.client.disconnectedEvt.addCallback(this::onDisconnected);
         }
     }
 
@@ -111,10 +115,12 @@ public class MainFrame extends JFrame {
         if (main.client != null) {
             main.client.loggedInEvt.removeCallback(this::onLoggedIn);
             main.client.joinedSessionEvt.removeCallback(this::onJoinedSession);
-            main.client.guestJoinedEvt.removeCallback(this::onGuestJoined);
+            main.client.userJoinedEvt.removeCallback(this::onUserJoined);
+            main.client.userLeavedEvt.removeCallback(this::onUserLeaved);
             main.client.addShapeEvt.removeCallback(this::onAddShape);
             main.client.clearWhiteboardEvt.removeCallback(this::onClearWhiteboard);
             main.client.newWhiteboardDataEvt.removeCallback(this::onNewWhiteboardData);
+            main.client.disconnectedEvt.removeCallback(this::onDisconnected);
         }
     }
 
@@ -123,10 +129,29 @@ public class MainFrame extends JFrame {
     }
 
     private void onJoinedSession(Object source, EventArgs args) {
+        usernameLabel.setText(Main.getInstance().userData.username);
     }
 
-    private void onGuestJoined(Object source, UserEventArgs args) {
+    private void onUserJoined(Object source, UserEventArgs args) {
+        if (args.userData.uid == Main.getInstance().userData.uid) {
+            return;
+        }
         userController.addUser(args.userData);
+    }
+
+    private void onUserLeaved(Object o, UserEventArgs userEventArgs) {
+        // If manager disconnected, exit.
+        if (userEventArgs.userData.role == UserRole.Manager) {
+            int result = JOptionPane.showConfirmDialog(null, "Disconnected from server.",
+                    "Message", JOptionPane.OK_OPTION);
+            if (result > -1) {
+                System.exit(0);
+            }
+        }
+        // Otherwise, remove the user panel button of this user.
+        else {
+            userController.removeUser(userEventArgs.userData);
+        }
     }
 
     private void onAddShape(Object source, ShapeEventArgs args) {
@@ -141,6 +166,14 @@ public class MainFrame extends JFrame {
     private void onNewWhiteboardData(Object source, WhiteboardDataEventArgs args) {
         whiteboardPanel.bufferedImage = args.whiteboardData.bufferedImage;
         whiteboardPanel.repaint();
+    }
+
+    private void onDisconnected(Object o, EventArgs eventArgs) {
+        int result = JOptionPane.showConfirmDialog(null, "Disconnected from server.",
+                "Message", JOptionPane.OK_OPTION);
+        if (result > -1) {
+            System.exit(0);
+        }
     }
 
 

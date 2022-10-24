@@ -2,6 +2,7 @@ package server;
 
 import client.users.User;
 import client.users.UserData;
+import client.users.UserRole;
 import packet.Message;
 
 import javax.net.ServerSocketFactory;
@@ -23,7 +24,7 @@ public class Server {
     /**
      * Map of Server Runnable and corresponding client data.
      */
-    //public static ConcurrentHashMap<ServerRunnable, ClientData> serverRunnableClientDatas;
+    public static ConcurrentHashMap<ServerRunnable, ClientData> serverRunnableClientDatas;
     /**
      * Map of UID and corresponding client data.
      */
@@ -96,6 +97,11 @@ public class Server {
         manager = clientData;
     }
 
+    /**
+     * Create a client data for the user data. Register as a joined user.
+     * @param serverRunnable
+     * @param userData
+     */
     public static synchronized void addJoinedClient(ServerRunnable serverRunnable, UserData userData) {
         System.out.println("Added client: " + userData.username + " (" + userData.uid + ")");
         ClientData clientData = new ClientData(userData, serverRunnable);
@@ -104,17 +110,20 @@ public class Server {
         uidClientDatas.put(userData.uid, clientData);
     }
 
-    public static synchronized int removeJoinedClient(ServerRunnable serverRunnable){
-        //ClientData clientData = serverRunnableClientDatas.getOrDefault(serverRunnable, null);
-        //serverRunnableClientDatas.remove(serverRunnable);
-        if(manager.equals(clientData)){
+    public static synchronized UserData removeJoinedClient(int uid){
+        UserData removedUserData = new UserData(uid, "username");
+        System.out.println("Server: Removing uid " + uid);
+        ClientData clientData = getClientDataByUid(uid);
+        if(clientData != null){
+            System.out.println("Server: Removing client data associated with uid " + clientData.userData.uid);
+            removedUserData = clientData.userData;
+            uidClientDatas.remove(uid);
+        }
+        if(manager.userData.uid == uid){
+            System.out.println("Server: Removing manager " + uid);
             manager = null;
         }
-        if(clientData != null){
-            uidClientDatas.remove(clientData.userData.uid);
-            return clientData.userData.uid;
-        }
-        return -1;
+        return removedUserData;
     }
 
     /**
@@ -130,7 +139,7 @@ public class Server {
         for(ClientData clientData : Server.serverRunnableClientDatas.values()){
             ServerRunnable serverRunnable = clientData.serverRunnable;
             Socket clientSocket = serverRunnable.socket;
-            if(clientSocket.equals(source.socket)){
+            if(ignoreSource == true && clientSocket.equals(source.socket)){
                 continue;
             }
             System.out.println("Server: Broadcasting message to: " + clientData.userData.username

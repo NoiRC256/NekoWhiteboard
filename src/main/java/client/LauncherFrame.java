@@ -84,8 +84,7 @@ public class LauncherFrame extends JFrame {
         modeBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Offline");
-        defaultComboBoxModel1.addElement("Host Server");
-        defaultComboBoxModel1.addElement("Join Server");
+        defaultComboBoxModel1.addElement("Online");
         modeBox.setModel(defaultComboBoxModel1);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
