@@ -62,6 +62,7 @@ public class Main {
 
         createMainFrame();
         this.mainFrame.setVisible(true);
+        this.mainFrame.colorChooser.getSelectionModel().setSelectedColor(Color.BLACK);
 
         switch (mode) {
             case Offline:

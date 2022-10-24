@@ -23,7 +23,7 @@ public class Server {
     /**
      * Map of Server Runnable and corresponding client data.
      */
-    public static ConcurrentHashMap<ServerRunnable, ClientData> serverRunnableClientDatas;
+    //public static ConcurrentHashMap<ServerRunnable, ClientData> serverRunnableClientDatas;
     /**
      * Map of UID and corresponding client data.
      */
@@ -63,8 +63,10 @@ public class Server {
 
     private static void parseArgs(String[] args) {
 
+        if(args.length <= 0) return;
+
         // Port number arg.
-        if (!args[0].isEmpty()) {
+        if (args[0] != null) {
             try {
                 port = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
@@ -103,8 +105,8 @@ public class Server {
     }
 
     public static synchronized int removeJoinedClient(ServerRunnable serverRunnable){
-        ClientData clientData = serverRunnableClientDatas.getOrDefault(serverRunnable, null);
-        serverRunnableClientDatas.remove(serverRunnable);
+        //ClientData clientData = serverRunnableClientDatas.getOrDefault(serverRunnable, null);
+        //serverRunnableClientDatas.remove(serverRunnable);
         if(manager.equals(clientData)){
             manager = null;
         }

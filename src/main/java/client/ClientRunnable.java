@@ -2,10 +2,14 @@ package client;
 
 import client.events.*;
 import client.users.UserData;
+import client.users.UserRole;
+import client.whiteboard.WhiteboardPanel;
 import packet.Message;
 import packet.*;
+import server.WhiteboardData;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
 
@@ -41,6 +45,7 @@ public class ClientRunnable implements Runnable {
      * Should clear whiteboard.
      */
     public final EventHandler clearWhiteboardEvt = new EventHandler();
+    public final EventHandler<WhiteboardDataEventArgs> newWhiteboardDataEvt = new EventHandler();
 
     public ClientRunnable(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
@@ -110,6 +115,10 @@ public class ClientRunnable implements Runnable {
         else if (msg.getClass().equals(WhiteboardClearNotify.class)){
             handleWhiteboardClearNotify();
         }
+        // New whiteboard data notify.
+        else if (msg.getClass().equals(WhiteboardDataNotify.class)){
+            handleWhiteboardDataNotify((WhiteboardDataNotify) msg);
+        }
     }
 
     //region User
@@ -133,9 +142,19 @@ public class ClientRunnable implements Runnable {
     // Join session response.
     private void handleUserJoinRsp(UserJoinRsp rsp, ObjectOutputStream out) throws IOException {
         if(rsp.isApproved){
-            System.out.println("Client: Joined session.");
+            System.out.println("Client: Joined session as " + rsp.userRole);
             Main.getInstance().userRole = rsp.userRole;
             joinedSessionEvt.invoke(this, EventArgs.empty);
+        }
+
+        // If is manager, set new server whiteboard data.
+        Main main = Main.getInstance();
+        if(main.userRole == UserRole.Manager){
+            WhiteboardPanel whiteboardPanel = main.mainFrame.whiteboardPanel;
+            out.writeObject(new ChangeWhiteboardDataReq( Main.getInstance().userData.uid,
+                    WhiteboardData.toByteArray(whiteboardPanel.bufferedImage, "png")
+            ));
+            out.flush();
         }
     }
 
@@ -157,6 +176,14 @@ public class ClientRunnable implements Runnable {
     // Receive clear whiteboard notify.
     private void handleWhiteboardClearNotify() {
         clearWhiteboardEvt.invoke(this, EventArgs.empty);
+    }
+
+    // Receive new whiteboard data notify.
+    private void handleWhiteboardDataNotify(WhiteboardDataNotify msg) throws IOException{
+        System.out.println("Client: Received whiteboard data notify, converting bytes to whiteboard buffer...");
+        BufferedImage bufferedImage = WhiteboardData.toBufferedImage(msg.bufferBytes);
+        WhiteboardData whiteboardData = new WhiteboardData(bufferedImage);
+        newWhiteboardDataEvt.invoke(this, new WhiteboardDataEventArgs(whiteboardData));
     }
 
     //endregion

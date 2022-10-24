@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class WhiteboardPanel extends JComponent {
 
     public BufferedImage bufferedImage;
-    private ConcurrentLinkedQueue<IShape> pendingShapes = new ConcurrentLinkedQueue<IShape>();
+    public ConcurrentLinkedQueue<IShape> pendingShapes = new ConcurrentLinkedQueue<IShape>();
     private IShape shapePreview;
 
     public WhiteboardPanel() {

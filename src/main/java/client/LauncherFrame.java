@@ -59,6 +59,7 @@ public class LauncherFrame extends JFrame {
         panel2.setLayout(new GridBagLayout());
         panel1.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         usernameField = new JTextField();
+        usernameField.setText("user");
         GridBagConstraints gbc;
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -136,6 +137,7 @@ public class LauncherFrame extends JFrame {
         panel5.setLayout(new GridBagLayout());
         serverInfoPanel.add(panel5, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         serverPortField = new JTextField();
+        serverPortField.setText("3001");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;

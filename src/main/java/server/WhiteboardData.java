@@ -2,21 +2,61 @@ package server;
 
 import client.shapes.IShape;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Data class that contains whiteboard buffered image and pending shapes.
  */
-public class WhiteboardData {
+public class WhiteboardData implements Serializable {
 
     public BufferedImage bufferedImage;
-    private ConcurrentLinkedQueue<IShape> pendingShapes;
+    public ConcurrentLinkedQueue<IShape> pendingShapes = new ConcurrentLinkedQueue<IShape>();
+
+    public WhiteboardData(BufferedImage bufferedImage) {
+        this.bufferedImage = bufferedImage;
+    }
 
     public WhiteboardData(BufferedImage bufferedImage, ConcurrentLinkedQueue<IShape> pendingShapes) {
         this.bufferedImage = bufferedImage;
         this.pendingShapes = pendingShapes;
+    }
+
+    /**
+     * Convert buffered image to byte array.
+     * @param bufferedImage
+     * @param format
+     * @return
+     * @throws IOException
+     */
+    public static byte[] toByteArray(BufferedImage bufferedImage, String format) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, format, out);
+        byte[] bytes = out.toByteArray();
+        return bytes;
+    }
+
+    /**
+     * Get buffered image from byte array.
+     * @param bytes
+     * @return
+     * @throws IOException
+     */
+    public static BufferedImage toBufferedImage(byte[] bytes) throws IOException{
+        InputStream in = new ByteArrayInputStream(bytes);
+        BufferedImage bufferedImage = ImageIO.read(in);
+        return bufferedImage;
+    }
+
+    /**
+     * Update whiteboard data.
+     * Usually called before sending.
+     */
+    public synchronized void update(){
+        drawPendingShapesToBuffer();
     }
 
     /**

@@ -19,8 +19,8 @@ import java.util.ArrayList;
 
 public class MainFrame extends JFrame {
 
-    public static final int DEFAULT_WIDTH = 1280;
-    public static final int DEFAULT_HEIGHT = 720;
+    public static final int DEFAULT_WIDTH = 1440;
+    public static final int DEFAULT_HEIGHT = 1080;
     public static final int MIN_WIDTH = 1024;
     public static final int MIN_HEIGHT = 768;
 
@@ -52,6 +52,7 @@ public class MainFrame extends JFrame {
     public JRadioButton ovalToolBtn;
     public JSlider thicknessSlider;
     public JButton clearBtn;
+    public JColorChooser colorChooser;
 
     // Users view.
     public JPanel rightPanel;
@@ -102,6 +103,7 @@ public class MainFrame extends JFrame {
             main.client.guestJoinedEvt.addCallback(this::onGuestJoined);
             main.client.addShapeEvt.addCallback(this::onAddShape);
             main.client.clearWhiteboardEvt.addCallback(this::onClearWhiteboard);
+            main.client.newWhiteboardDataEvt.addCallback(this::onNewWhiteboardData);
         }
     }
 
@@ -112,6 +114,7 @@ public class MainFrame extends JFrame {
             main.client.guestJoinedEvt.removeCallback(this::onGuestJoined);
             main.client.addShapeEvt.removeCallback(this::onAddShape);
             main.client.clearWhiteboardEvt.removeCallback(this::onClearWhiteboard);
+            main.client.newWhiteboardDataEvt.removeCallback(this::onNewWhiteboardData);
         }
     }
 
@@ -133,6 +136,11 @@ public class MainFrame extends JFrame {
 
     private void onClearWhiteboard(Object source, EventArgs args) {
         whiteboardPanel.clearAll();
+    }
+
+    private void onNewWhiteboardData(Object source, WhiteboardDataEventArgs args) {
+        whiteboardPanel.bufferedImage = args.whiteboardData.bufferedImage;
+        whiteboardPanel.repaint();
     }
 
 
@@ -252,16 +260,16 @@ public class MainFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 3;
-        gbc.weighty = 0.3;
         gbc.fill = GridBagConstraints.BOTH;
         mainPanel.add(bottomPanel, gbc);
         bottomPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         chatPanel = new JPanel();
         chatPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        chatPanel.setPreferredSize(new Dimension(300, 50));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.weightx = 0.5;
+        gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         bottomPanel.add(chatPanel, gbc);
@@ -271,17 +279,18 @@ public class MainFrame extends JFrame {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         bottomPanel.add(panel2, gbc);
         panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        colorChooser = new JColorChooser();
+        panel2.add(colorChooser, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(50, 100), null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setPreferredSize(new Dimension(150, 67));
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = 0;
-        gbc.weightx = 0.1;
+        gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         bottomPanel.add(panel3, gbc);
         panel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));

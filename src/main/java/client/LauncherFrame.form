@@ -34,7 +34,9 @@
                   </grid>
                   <gridbag weightx="1.0" weighty="1.0"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value="user"/>
+                </properties>
               </component>
               <component id="35436" class="javax.swing.JLabel">
                 <constraints>
@@ -140,7 +142,9 @@
                       </grid>
                       <gridbag weightx="1.0" weighty="1.0"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <text value="3001"/>
+                    </properties>
                   </component>
                   <component id="6bdb2" class="javax.swing.JLabel">
                     <constraints>

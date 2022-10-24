@@ -65,6 +65,12 @@ public class ToolboxController {
                 }
             }
         });
+        view.colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                toolbox.color = view.colorChooser.getColor();
+            }
+        });
     }
 
     public void draw(WhiteboardPanel whiteboardPanel, MouseData mouseData) {
